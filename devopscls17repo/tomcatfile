@@ -1,0 +1,26 @@
+################# Tomcat8 ####################
+
+-> Apache tomcat is a open source web server and servlet container.
+-> It is developed by the apache software foundation is also know as ASF.
+-> Tomcat implements Java Servlet(JSP) and Javaserver pages specification from Sun Micro systems.
+-> It provides a "Pure Java " web server environment.
+-> It includes tools for configuartion and management.
+-> It can be configured directly by editing XML configuration files.
+-> Tomcate written in Java language.
+-> It is cross-platform software works on various operating systems.
+
+
+-> Tomcat8 is application webserver
+-> Deploy to container = jenkins plugin
+-> To run jar file in linux = #java -jar load.jar  
+
+
+-> Install tomcate8: https://linode.com/docs/development/frameworks/apache-tomcat-on-ubuntu-16-04/
+
+-> #cd /var/lib/tomcat8/conf/tomcat-users.xml              
+              <role rolename="manager-gui"/>
+              <role rolename="manager-script"/>
+              <role rolename="manager-jmx"/>
+              <role rolename="manager-status"/>
+              <user username="username" password="******" roles="manager-script,manager-gui,manager-jmx,manager-status"/>
+</tomcat-users>

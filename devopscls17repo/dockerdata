@@ -1,0 +1,154 @@
+docker image: 
+A Docker Image is the template (application plus required binaries and libraries) needed to build a running Docker Container (the running instance of that image).
+Image is a file which describe how the container should behave.Its like a template of the container.
+Docker image is package,Template,Plan. It is used to create one or more container's
+
+docker Container: 
+Container is the working copy.
+Container's are running instances of images, isolated,and own env and set of process.
+
+
+#docker pull ubuntu --> it will automatically pull it from Docker Hub.
+#docker run -i -t ubuntu /bin/bash
+#docker run -it --name=webserver ubuntu:latest --> create docker container with name.
+#docker commit 9c09acd48a25 fedora-base-with-git
+#docker logs 2c9d5e12800e - To view docker logs.
+#docker exec -it [container-id] bash --> How to enter exit docker container
+
+########################## Docker File ######################################
+-> Docker file is the test file or script which contains keywords and set of linux commands which are executed automatically whenever we 
+build the docker images or A Dockerfile is a text configuration file written in a popular, human-readable Markup Language called YAML.
+-> Docker file is defination of docker image.
+
+Command	Description: 
+
+ADD: 	      Copies a file from the host system onto the container
+CMD: 	      The command that runs when the container starts (Used to executing commands when we build a new container from the docker image)
+ENTRYPOINT:   Define the default command that will be executed when the container is running.
+ENV: 	      Sets an environment variable in the new container
+EXPOSE:	      Opens a port for linked containers
+FROM:	      The base image to use in the build. This is mandatory and must be the first command in the file.
+MAINTAINER:	  An optional value for the maintainer of the script
+ONBUILD:      A command that is triggered when the image in the Docker file is used as a base for another image.
+RUN: 	      Executes a command and save the result as a new layer(Used to execute a command during the build process of the docker image.)
+USER:	      Sets the default user within the container (Set the user or UID for the container created with the image)
+VOLUME:	      Creates a shared volume that can be shared among containers or by the host machine(Enable access/linked directory between the container and the host machine.)
+WORKDIR:	  Set the default working directory for the container(This is directive for CMD command to be executed)
+COPY:         Copy files from Docker host to container. 
+
+--> Difference between docker add and copy?
+    Although ADD and COPY are functionally similar.generally speaking, COPY is preferred. That’s because it’s more transparent than ADD.
+	COPY only supports the basic copying of local files into the container.
+	ADD has some features (like local-only tar extraction and remote URL support) that are not immediately obvious.
+	
+--> Example:
+    For COPY:
+      COPY resources/jdk-7u79-linux-x64.tar.gz /tmp/
+      RUN tar -zxvf /tmp/jdk-7u79-linux-x64.tar.gz -C /usr/local
+      RUN rm /tmp/jdk-7u79-linux-x64.tar.gz
+    For ADD:
+      ADD resources/jdk-7u79-linux-x64.tar.gz /usr/local/
+      ADD supports local-only tar extraction. Besides it, COPY will use three layers, but ADD only uses one layer.
+	  
+--> Shell and Exec forms ?
+    All three instructions (RUN, CMD and ENTRYPOINT) can be specified in shell form or exec form. 
+	
+	Shell form:
+    <instruction> <command>
+	
+-->	RUN apt-get install python3
+    CMD echo "Hello world"
+    ENTRYPOINT echo "Hello world"
+	 
+	Exec form:
+	<instruction> ["executable", "param1", "param2", ...]
+	 
+--> RUN ["apt-get", "install", "python3"]
+    CMD ["/bin/echo", "Hello world"]
+    ENTRYPOINT ["/bin/echo", "Hello world"]
+	
+--> diff b/w CMD and ENTRYPOINT ?
+    
+
+--> Ref link: https://www.learnitguide.net/2018/06/dockerfile-cmd-entrypoint-differences.html -> diff b/w cmd and entrypoint.
+              http://www.inanzzz.com/index.php/post/rhsb/running-apache-server-as-foreground-on-ubuntu-with-dockerfile --> docker file
+
+################# Lab section #############
+
+FROM ubuntu:16.04
+RUN apt-get update
+RUN apt-get install -y apache2
+#RUN apt-get install –y apache2-utils
+RUN apt-get clean
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+#docker build -t webserver_img .
+
+start/stop/rm docker container:
+#docker start <ID>
+#docker stop <ID>
+#docker rm <ID>
+
+How a Volume Can Help ?
+                    A volume allows data to persist, even when a container is deleted.
+					Volumes are also a convenient way to share data between the host and the container.
+          
+$docker volume create --name DataVolume1 --> Create a volume
+$docker run -ti --rm -v [volume name]:[container directory]  ubuntu:16.04 --> using the --rm flag to automatically delete it when we exit
+$docker volume ls --> List volumes
+$docker volume inspect my-vol --> Inspect a volume
+
+Docker file example:
+RUN mkdir /devopsvol
+RUN echo 'Hello World' >> /devopsvol/hello.txt
+VOLUME /devopsvol
+
+############################ Pushing the images to Docker Hub ######################
+
+#docker commit -m "mywebserver" myweb demodevops01/myweb:latest --> commit docker container with username.(myweb is container name)
+#docker login --> login into docker hub
+#docker push demodevops01/myweb --> push into docker hub
+
+
+##########################  Docker Network  ##############################################
+
+Docker takes care of the networking aspects so that the containers can communicate with other containers and also with the Docker Host.
+
+Docker's Default Networks:
+                         Each Docker installation automatically builds three default networks.
+                         $docker network ls --> List of all docker networks
+                         The bridge network is the default network.
+                         Docker Networking: Bridge vs Overlay:
+                   Docker natively supports two types of networks: bridge and overlay.
+						 
+Network drivers: 
+
+bridge: 
+       A bridge network is limited to a single host (server).
+	   The default network driver. If you don’t specify a driver, this is the type of network you are creating.
+        
+overlay: 
+        An overlay network can span multiple hosts (servers).
+		Overlay networks connect multiple Docker daemons together and enable swarm services to communicate with each other.
+    
+    #docker network inspect <networkname> --> If you want to see more details on the network associated with Docker.
+   
+   
+   Creating a New Bridge Network:
+   #docker network create -d [driver] [new network name]
+	 The -d flag lets you specify the driver for the network. For a bridge network, use the bridge driver.
+   
+   Starting a Container and Adding it to a Network:
+   If you do not specify a network when you start up a container, it will automatically be added to the default bridge network.
+   #docker run -it --net=[network name] --name [container name] [image]
+
+Deleting a Network:
+Note: You cannot delete the default networks that Docker creates on start-up.
+#docker network rm [network ID or name]
+#docker create --name my-nginx --network gk-net -p 8080:80 ubuntu:latest --> Connect a container to a user-defined bridge
+#docker network create --driver=bridge --subnet=192.168.0.0/16 gk-net --> Specify advanced options
+#docker network inspect networkname --> To see details information.
+
+Adding a Running Container to a Network:
+#docker network connect [network name] [container name]

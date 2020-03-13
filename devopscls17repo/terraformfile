@@ -1,0 +1,47 @@
+Infrastructure: Infrastructure is frame work and it consists of resources to run any application.
+            ->  Infrastructure is composed of physical and virtusal resources that support the flow,storage,processing and analysis of data.
+
+Infrastructure As a code (IAC): Provisioning Infrastructure using scripts/tools instead of manually configuring machines.
+                            ->  Provisioning means Creating,Updating,Deleting.
+                            ->  IAC is about writing code that describe your Infrastructure.
+                            
+                            
+Tools for IAC: 
+              -> Terraform
+              -> AWS CloudFormation
+              -> Azure Resource Manager
+              -> Google Cloud Deployment Manager etc..
+              
+              What is Terraform:
+-> Terraform is an Infrastructure As code software by HashiCorp.
+-> Terraform enables you to create,change,improve and versioning Infrastructure safely and efficiently.
+-> Terraform is the first multi-cloud Infrastructure As a code tool and it is written in Go Language.
+-> Terraform provides such as AWS,GCP,Azure,OpenStack,VMware and more.
+
+
+Installing Terraform on Linux: 
+To install Terraform, find the appropriate package for your system and download it.
+-> Terraform is packaged as a zip archive, So, after downloading Terraform, unzip the package.
+-> Terraform runs as a single binary named terraform.
+-> The final step is to make sure that the terraform binary is available on the PATH.
+-> Finally verify the version:
+         -> terraform
+         -> terraform --version
+         #export PATH=${PATH}:/root/awsdata
+         #vim .bashrc
+         -> export PATH=${PATH}:/root/awsdata
+         
+   #provider.tf
+provider "aws" {
+  region = "eu-west-1"
+
+}
+
+resource "aws_instance" "web01" {
+  ami           = "ami-0620d12a9cf777c87"
+  instance_type = "t2.micro"
+ 
+   tags={
+    Name = "webserver_02"
+  }
+}

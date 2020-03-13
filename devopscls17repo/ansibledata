@@ -1,0 +1,146 @@
+#sudo apt-add-repository ppa:ansible/ansible
+#sudo apt-get update
+#sudo apt-get install ansible.
+
+
+#vim /etc/ansible/hosts
+
+[webserver]
+172.31.19.29   ansible_ssh_user=ubuntu   ansible_ssh_private_key_file=/root/ganeshkey.pem 
+172.31.17.199   ansible_ssh_user=ubuntu   ansible_ssh_private_key_file=/root/ganeshkey.pem
+
+
+######## Install pkg's in ubuntu os ######
+packages.yml                          
+                                     
+---
+- hosts: webgroup                                            
+  become: yes
+  tasks:
+  - name: Install apache package in ubuntu os
+    apt:
+    name: apache2
+    state: present
+    
+    
+  ---
+- hosts: webserver
+  become: true
+  tasks:
+    - name: Installs tomcat8 webserver
+      apt: name=tomcat8 state=present update_cache=true
+      notify:
+        - starttomcat
+
+  handlers:
+    - name: starttomcat
+      service: name=tomcat8 state=started
+      
+      
+   #ansible-vault create topsecret.yml --> create encrypted file using vault.
+#ansible-vault edit topsecret.yml --> To edit the vault file.
+#ansible-vault decrypt topsecret.yml --> To decrypt a file (back to plan text).
+#ansible-vault encrypt topsecret.yml --> To encrypt a file.
+#ansible-playbook topsecret.yml --ask-vault-pass --> To run a encrypt playbook. 
+
+
+#ansible all -a "yum -y install httpd" --> with out using module 'yum' install 'httpd' package.
+#ansible all -m yum -a "name=httpd state=present" --> Using module yum install httpd package.
+
+File Transfer:-
+Copy module:
+#ansible devopsgroup -m copy -a "src=/root/test.sh dest=/tmp/"
+
+File module:
+#ansible all -m file -a "dest=/tmp/test.sh mode=777" -> Using the file module you can also modify the file properties on host.
+#ansible all -m file -a "dest=/tmp/ganeshdir  state=directory mode=755" -> You can also create directories and set permissions.
+#ansible all -m file -a "dest=/tmp/ganeshdir state=absent" -> You can also delete the directories.
+
+Managing Packages:
+#ansible all -m apt -a "name=apache2 state=present" --become --> Packages can also be maintained using  ansible there are yum and apt modules for that.
+#ansible all -m apt -a "name=apache2* state=absent" --become --> Ensure a package is not installed.
+
+Managing Services:
+#ansible webservers -m service -a "name=httpd state=started" --> Ensure a service is started on all webservers.
+#ansible webservers -m service -a "name=httpd state=restarted" --> Alternatively, restart a service on all webservers.
+# ansible webservers -m service -a "name=httpd state=stopped" --> Ensure a service is stopped.
+
+
+####### Copy ssh key into multiple target locations by using bash script ###################
+
+Step: Before run below script follow below steps:
+#eval `ssh-agent -s` or eval "$(ssh-agent)"
+https://www.techrepublic.com/article/how-to-ssh-into-an-aws-instance/
+
+cat copysshkey.sh
+#!/bin/bash
+for ip in `cat /root/list_of_servers`; do
+    ssh-copy-id -i ~/.ssh/id_rsa.pub ubntu@$ip
+done
+
+#ansible-galaxy init apache --offline -> use for to creating a structure.
+
+######################################
+components of roles:
+
+defaults: it provide the data about the role/application.default variables will be stored in this folder.
+files:    put the static files here.
+Handlers: kind of refresh or trigger .Tasks which are based on some actions.A Handler is exactly the same as a Task, but it will run when called by another Task.
+          - In case my http.conf changes,it should trigger service restart.
+		      - This is useful for secondary actions that might be required after running a Task, such as starting a new service after installation or reloading a service after a configuration change.
+		  
+meta:     it tells about the role, information about the role like Author name,supported platforms etc...Dependencies , if any
+tasks:    actions are stored , core logic or code .Installing packages,coping files etc..
+Templates : will be stored in the dynamic files -> similar to files except that templates support dynamic files.
+vars:     both vars and defaults stores variables.variables stored under "vars" has got high priority.
+
+##############   project sample #########################
+
+#cd tasks -> vim main.yml file
+- include: install.yml
+- include: configure.yml
+- include: service.yml
+
+incide tasks: vim install.yml
+---
+- name: install apache
+  apt: pkg=apache2 state=present
+	
+incide tasks: vim configure.yml
+---
+- name: apache2.conf
+  copy: src=apache2.conf dest=/etc/apache2/apache2.conf
+  notify:
+   - restart apache service
+- name: send index.html
+  copy: src=index.html dest=/var/www/html/index.html
+
+incide tasks: vim service.yml
+---
+- name: start apache service
+  service: name=apache2 state=started
+
+includede files: #cp /etc/apache2/apache2.conf .
+              #vim apache2.conf ->modified ansible file
+
+              #vim index.html --> edit sample file
+			  <html>
+			  <h1> Learning ansible roles </h1>
+			  </html>
+
+incide handlers: #vim main.yml
+---
+- name: restart apache service
+  service: name=apache2 state=restarted
+
+incide /etc/ansible: create site.yml file
+#vim site.yml
+---
+- hosts: webserver
+  sudo: yes
+  roles: 
+    - apache
+	
+To check syntax : #ansible-playbook site.yml --syntax-check
+
+
