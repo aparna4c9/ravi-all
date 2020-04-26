@@ -1,0 +1,5 @@
+# Note: Rename this to terraform.tfvars and substitute your desired values.
+region = "us-east-1"
+profile = ""
+ec2_size = "t2.micro"
+key_name = ""
