@@ -1,0 +1,7 @@
+# Rename this file as terraform.tfvars and replace the below values with your desired values 
+
+virtual_machine_name = "web1"
+location = "eastus"
+prefix = "abccorp"
+frontend_subnet_cidr = "10.0.0.0/24"
+admin_username = "web-admin"
